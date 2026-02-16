@@ -6,9 +6,9 @@ The project supports both idealised mathematical shuffle models and human-inspir
 
 ## Motivation
 
-Classical results show that common shuffling procedures converge to uniform randomness at very different rates. For example, Bayer and Diaconis famously showed that approximately seven riffle shuffles are required to adequately randomise a standard deck, while other work has demonstrated that overhand shuffles may require on the order of ten thousand repetitions to approach similar randomness.
+Classical results show that common shuffling procedures converge to uniform randomness at very different rates. For example, Bayer and Diaconis famously showed that approximately 7 riffle shuffles are required to adequately randomise a standard deck, while other work has demonstrated that overhand shuffles may require on the order of 10,000 repetitions to approach similar randomness.
 
-In practice, such idealised procedures are often infeasible. In live, self-dealt tournament poker, time pressure frequently limits players to fewer than seven shuffles, raising a natural empirical question: how do different shuffling strategies behave when full randomisation is not achievable?
+In practice, such idealised procedures are often infeasible. In live, self-dealt tournament poker for example, time pressure frequently limits players to fewer than seven shuffles, raising a natural empirical question: how do different shuffling strategies behave when full randomisation is not achievable?
 
 ShuffleLab was developed to investigate this gap between theory and practice by analysing shuffle behaviour under constrained shuffle counts and realistic modelling assumptions.
 
@@ -128,7 +128,7 @@ make
 ### Run
 
 ~~~bash
-./shufflelab [options]
+./shufflelab
 ~~~
 
 Experiments are configured via explicit runtime options and configuration structures in the codebase. The command-line interface is intentionally minimal and focused on driving experimental runs rather than user-facing presentation.
