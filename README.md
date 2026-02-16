@@ -1,9 +1,14 @@
+# ShuffleLab
+
+
 ## Overview
 
 ShuffleLab is a performance-focused C++ project for modelling and analysing card-shuffling algorithms, with an emphasis on probabilistic behaviour, empirical randomness testing, and explicit modelling assumptions.
 
-The project supports both idealised mathematical shuffle models and human-inspired shuffling behaviour, providing a framework for running controlled experiments and analysing how different shuffling mechanisms behave relative to uniform random permutations.
+The project supports both idealised mathematical shuffle models and human-inspired shuffling behaviour, providing a framework for running controlled experiments and analysing how different shuffling mechanisms behave relative to uniform random permutations.  
 
+<br>
+  
 ## Motivation
 
 Classical results show that common shuffling procedures converge to uniform randomness at very different rates. For example, Bayer and Diaconis famously showed that approximately 7 riffle shuffles are required to adequately randomise a standard deck, while other work has demonstrated that overhand shuffles may require on the order of 10,000 repetitions to approach similar randomness.
@@ -11,6 +16,8 @@ Classical results show that common shuffling procedures converge to uniform rand
 In practice, such idealised procedures are often infeasible. In live, self-dealt tournament poker for example, time pressure frequently limits players to fewer than seven shuffles, raising a natural empirical question: how do different shuffling strategies behave when full randomisation is not achievable?
 
 ShuffleLab was developed to investigate this gap between theory and practice by analysing shuffle behaviour under constrained shuffle counts and realistic modelling assumptions.
+
+<br>
 
 ## Capabilities
 
@@ -23,6 +30,7 @@ ShuffleLab provides a framework for experimentally analysing card-shuffling beha
 - Applying statistical analyses to assess uniformity, entropy, and convergence behaviour
 - Reporting results via a lightweight command-line interface focused on analysis rather than presentation
 
+<br>
 
 ## Design and Architecture
 
@@ -50,6 +58,8 @@ Experiment Configuration -> RNG and Shuffle Model Selection -> Experiment Execut
 
 Internally, this pipeline involves multiple intermediate steps and configuration layers, but this abstraction captures the core flow of data through the system.
 
+<br>
+
 ## Modelling and Randomness
 
 ShuffleLab treats randomness and shuffle behaviour as explicit modelling choices rather than implicit implementation details. Both idealised and human-inspired shuffling mechanisms are represented directly, allowing their assumptions and limitations to be examined experimentally.
@@ -73,6 +83,8 @@ By supporting both categories within the same experimental framework, ShuffleLab
 ### Modelling Philosophy
 
 Rather than attempting to certify shuffles as “sufficiently random”, ShuffleLab focuses on comparative analysis. Shuffle models are evaluated relative to one another and to idealised baselines, with an emphasis on understanding how randomness degrades or improves under different assumptions and constraints.
+
+<br>
 
 ## Experimental Workflow
 
@@ -105,6 +117,8 @@ ShuffleLab currently applies a small set of exploratory statistical measures to 
 
 These analyses are intended to support comparative investigation between shuffle models and constraints, rather than to provide formal guarantees of randomness.
 
+<br>
+
 ## Build and Run
 
 ShuffleLab is built as a native C++ application and is intended to be run from the command line.
@@ -133,6 +147,8 @@ make
 
 Experiments are configured via explicit runtime options and configuration structures in the codebase. The command-line interface is intentionally minimal and focused on driving experimental runs rather than user-facing presentation.
 
+<br>
+
 ## Limitations
 
 ShuffleLab is intended as an exploratory analysis tool and makes no claims of providing formal guarantees about randomness or fairness.
@@ -143,6 +159,8 @@ ShuffleLab is intended as an exploratory analysis tool and makes no claims of pr
 - The command-line interface prioritises analytical output over usability and presentation.
 
 These limitations are intentional and reflect the project’s focus on transparency, interpretability, and iterative experimentation.
+
+<br>
 
 ## Future Work
 
@@ -160,6 +178,7 @@ Planned and potential extensions to ShuffleLab include:
 - **Parallel experiment execution**  
   Introducing multithreaded execution to accelerate large experimental runs while preserving explicit control over randomness and reproducibility.
 
+<br>
 
 ## References
 
