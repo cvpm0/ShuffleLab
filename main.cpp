@@ -134,7 +134,8 @@ int main(int argc, char** argv) {
         print_logo();
         std::cout << "Card shuffle analysis tool\n";
         std::cout << "Use --run to execute a default experiment\n";
-        std::cout << "Use --help to see available options\n\n";
+        std::cout << "Use --help to see available options\n";
+        std::cout << "Use --desc to see project description\n\n";
         return 0;
     }
 

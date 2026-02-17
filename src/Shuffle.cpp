@@ -110,7 +110,7 @@ void DeckContext::hindu() noexcept {
 }
 
 // Overhand Shuffle (Custom)
-inline void DeckContext::overhand() noexcept {
+void DeckContext::overhand() noexcept {
     // determines number of cards taken off of top for every removal //larrger more random cut
     static auto overhand_cut_cdf = []{
         return create_cdf(20, 26, 31, 4); // to be observed

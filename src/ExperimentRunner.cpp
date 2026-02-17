@@ -1,6 +1,7 @@
 #include "ExperimentRunner.h"
 #include "UI.h"
 
+
 ExperimentRunner::ExperimentRunner(const ExperimentConfig& cfg) : cfg(cfg), allowed{Shuffle::Cut, Shuffle::Riffle, Shuffle::Hindu, Shuffle::Overhand} {}
 
 void ExperimentRunner::apply_shuffle(DeckContext& ctx, Shuffle s) {
@@ -13,9 +14,9 @@ void ExperimentRunner::apply_shuffle(DeckContext& ctx, Shuffle s) {
         case Shuffle::Hindu:
             ctx.hindu(); break;
         case Shuffle::Overhand:
-            ctx.hindu(); break;
+            ctx.overhand(); break;
         case Shuffle::Cut:
-            ctx.hindu(); break;
+            ctx.cut(); break;
     }
 }
 
@@ -37,9 +38,22 @@ double ExperimentRunner::score(double seqMeanUniformity,
     constexpr double MEAN_ADJACENCY_TARGET = 50.0;
     constexpr double MEAN_DISPLACEMENT_TARGET = 17.33;
 
-    constexpr double W_UNIFORMITY = 0.65;
-    constexpr double W_ADJACENCY = 0.2;    
-    constexpr double W_DISPLACEMENT = 0.15;
+    // Inverse standard deviation used to convert deviation into z-score.
+    // For chi-square distribution: StdDev = sqrt(2·df), so InvStdDev = 1 / sqrt(2·df).
+
+    constexpr double UNIFORMITY_INV_STDDEV = 0.099015; // df = 51 → StdDev = sqrt(102) ≈ 10.0995 → Inv ≈ 0.0990147543
+
+    constexpr double ADJACENCY_INV_STDDEV = 0.1;                  // df = 50 → StdDev = sqrt(100) = 10 → Inv = 0.1
+
+    // Displacement is not chi-square distributed. For uniform permutation of 52 cards:
+    // Expected mean ≈ 17.3269, empirical StdDev ≈ 3 → InvStdDev ≈ 1/3.
+    constexpr double DISPLACEMENT_INV_STDDEV = 0.333333;
+
+    constexpr double W_UNIFORMITY = 0.25;
+    constexpr double W_ADJACENCY = 0.7;    
+    constexpr double W_DISPLACEMENT = 0.05;
+
+    
 
     double score = 0.0; // lower = less deviation / closer to expected value
     double weightSum = 0.0;
@@ -50,20 +64,20 @@ double ExperimentRunner::score(double seqMeanUniformity,
 
     // Absoloute deviation from ideal
     if (seqMeanUniformity != -1) {
-        double p = std::abs(seqMeanUniformity - MEAN_UNIFORMITY_TARGET);
-        score += W_UNIFORMITY * p;
+        double z = (seqMeanUniformity - MEAN_UNIFORMITY_TARGET) * UNIFORMITY_INV_STDDEV;
+        score += W_UNIFORMITY * z * z;
         weightSum += W_UNIFORMITY;
     }
 
     if (seqMeanAdjacency != -1) {
-        double p = std::abs(seqMeanAdjacency - MEAN_ADJACENCY_TARGET);
-        score += W_ADJACENCY * p;
+        double z = (seqMeanAdjacency - MEAN_ADJACENCY_TARGET) * ADJACENCY_INV_STDDEV;
+        score += W_ADJACENCY * z * z;
         weightSum += W_ADJACENCY;
     }
 
     if (seqMeanDisplacement != -1) {
-        double p = std::abs(seqMeanDisplacement - MEAN_DISPLACEMENT_TARGET);
-        score += W_DISPLACEMENT * p;
+        double z = (seqMeanDisplacement - MEAN_DISPLACEMENT_TARGET) * DISPLACEMENT_INV_STDDEV;
+        score += W_DISPLACEMENT * z * z;
         weightSum += W_DISPLACEMENT;
     }
 
@@ -79,13 +93,14 @@ void ExperimentRunner::run() {
 
     const int base = static_cast<int>(allowed.size());
 
-    std::vector<int> bestSeqIdx(cfg.kMax);  
+    std::vector<int> bestSeqIdx;  
     // radix enumerator needs to be altered to be compatible when allowed != Shuffle Enum
     DeckContext bestShuffledDeck;
     double bestScore = std::numeric_limits<double>::infinity();
 
     // Compute t trials for n^k sequences of size k (n = # unique shuffle types)
-    for (int k = 1; k <= cfg.kMax; ++k) {
+    //for (int k = 1; k <= cfg.kMax; ++k) {
+    int k = cfg.kMax;
         
         std::vector<int> idx(k, 0);
         bool hasNext = true;
@@ -101,33 +116,31 @@ void ExperimentRunner::run() {
 
             for (int t = 0; t < cfg.trials; ++t) {
                 
-                ctx.reset();
+                ctx.reset(); // sorts deck
                 
                 for (int step = 0; step < k; ++step) {
                     apply_shuffle(ctx, allowed[idx[step]]);
-
-                    // Update relevant stats
-                    if (cfg.testUniformity) ctx.observe_uniformity();
-                    if (cfg.testAdjacency)  ctx.observe_adjacency();
-                    if (cfg.testMixing)     ctx.observe_displacement();
                 }
 
-                // Extracting only key metrics for now
-                if (cfg.testUniformity) {
-                    auto report = report_uniformity(ctx);
-                    seqMeanUniformity += (report.meanChiSq - seqMeanUniformity) / (t + 1);
-                } 
-                if (cfg.testAdjacency) {
-                    auto report = report_adjacency(ctx);
-                    seqMeanAdjacency += (report.meanChiSq - seqMeanAdjacency) / (t + 1);
-                } 
-                if (cfg.testMixing) {
-                    auto report = report_displacement(ctx);
-                    seqMeanDisplacement += (report.mean - seqMeanDisplacement) / (t + 1);
-                } 
-
-
+                // Update relevant stats
+                if (cfg.testAdjacency)  ctx.observe_adjacency();
+                if (cfg.testUniformity) ctx.observe_uniformity();
+                if (cfg.testMixing)     ctx.observe_displacement();
             }
+
+            // Aggregate statistical data across trials
+            if (cfg.testUniformity) {
+                seqMeanUniformity = report_uniformity(ctx).meanChiSq;
+            }
+
+            if (cfg.testAdjacency) {
+                seqMeanAdjacency = report_adjacency(ctx).meanChiSq;
+            }
+
+            if (cfg.testMixing) {
+                seqMeanDisplacement = report_displacement(ctx).mean;
+            }
+
 
             // Update best sequence
             double seqScore = score(seqMeanUniformity, seqMeanAdjacency, seqMeanDisplacement); // NEED TO NORMALISE
@@ -139,7 +152,7 @@ void ExperimentRunner::run() {
 
             hasNext = next_sequence(idx, base);
         }
-    }
+    //}
 
     print_experiment_results(cfg, bestShuffledDeck, bestSeqIdx, allowed.size());
 }
